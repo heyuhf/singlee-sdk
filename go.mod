@@ -1,4 +1,4 @@
-module singlee-sdk
+module github.com/heyuhf/singlee-sdk
 
 go 1.14
 
