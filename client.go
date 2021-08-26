@@ -52,25 +52,30 @@ func (c *Client) OrderQuery(shopId, posId, mchOrderNo string) (resp OrderQueryRe
 	return
 }
 
+func (c *Client) getLoggerEntity(keyword string) *logrus.Entry {
+	return c.Logger.WithField("singleeSdk", keyword)
+}
+
 func (c *Client) Request(url string, params map[string]string, v interface{}) (err error) {
 
 	params["timestamp"] = time.Now().Format("20060102150405")
 	params["sign"] = GetSign(params, c.Key)
 	jStr, _ := json.Marshal(params)
+	c.getLoggerEntity("requestParams").Info(string(jStr))
 	req, err := http.NewRequest("POST", url, bytes.NewReader(jStr))
 	if err != nil {
-		c.Logger.Error("requestError", err)
+		c.getLoggerEntity("requestError").Error(err)
 		return
 	}
 
 	rsp, err := c.HttpClient.Do(req)
 	if err != nil {
-		c.Logger.Error("doRequestError", err)
+		c.getLoggerEntity("doRequestError").Error(err)
 		return
 	}
 	body, err := ioutil.ReadAll(rsp.Body)
 	if err != nil {
-		c.Logger.Error("readBodyError", err)
+		c.getLoggerEntity("readBodyError").Error(err)
 		return
 	}
 	err = json.Unmarshal(body, v)
